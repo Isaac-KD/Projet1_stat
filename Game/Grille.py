@@ -5,7 +5,9 @@ from Game.Bateau import Bateau
 class Grille():
     def __init__(self,taille=10):
         self.grille = np.zeros((taille, taille), dtype=int)
-        self.liste_bateaus = []
+        self.dico_bateau = {}
+        self.liste_bateau=[]
+        
     def affiche(self):
         plt.imshow(self.grille, cmap='viridis') 
         plt.show()
@@ -32,14 +34,25 @@ class Grille():
         if direction == 'V':
             for i in range(bateau.taille):
                 self.grille[y-i][x]= bateau.value
+                bateau.body[i] = (x,y-i)
         else :
             for i in range(bateau.taille):
                 self.grille[y][x+i]= bateau.value
-                      
+                bateau.body[i] = (x+i,y)
+                
+    def ajoute_dico(self,bateau):
+        clee = bateau.value
+        if clee in self.dico_bateau:
+            self.dico_bateau[clee].append(bateau)
+        else:
+            self.dico_bateau[clee] = [bateau]
+            
     def place( self, bateau, position, direction):
         if self.peut_placer(bateau, position, direction):
             self.add(bateau,position,direction)
+            self.ajoute_dico(bateau)
             self.liste_bateau.append(bateau)
+            bateau.position = position
             return True
         else: 
             return False 
@@ -52,7 +65,7 @@ class Grille():
         else: res = self.place(bateau,(x,y),'V')
         return res
     
-    def place_all(self):
+    def place_all(self,liste=):
         liste_non_placer = []
         #porte_avions 
         liste_non_placer.append( Bateau(5,1,(-1,-1),self))
@@ -70,6 +83,26 @@ class Grille():
             if placed :
                 x = liste_non_placer.pop()
             placed = self.place_alea(x)  
+    
+    def find(self,pos):
+        x,y = pos
+        if self.grille[y][x] <= 0 :
+            return None
+        else :
+            for bat in self.liste_bateau:
+                if pos in self.body:
+                    return bat
+        return None
+    
+    def toucher(self,pos):
+        x,y = pos
+        if self.grille[y][x] > 0 :
+            self.grille[y][x]=-1
+            b = find(self,pos)
+            b.pdv-=1
+            if not b.est_vivant():
+                print(" Coulerrrrr ")
+                
         
     def genere_grille():
         new = Grille()
