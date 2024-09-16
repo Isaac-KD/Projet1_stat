@@ -38,9 +38,10 @@ class TestGrille():
         else : print("Error test eq check #2")
         
         # test ADD
-        self.grille.add(self.croiseur,(4,4),'H')
+        self.grille.add(self.croiseur,(5,5),'H')
         for i in range(self.croiseur.taille):
-            if not self.grille.grille[4][4+i] == self.croiseur.value:
+            print(i)
+            if not self.grille.grille[5][5+i] == self.croiseur.value:
                 print("TEST ERRROR add check #1")
                 break
         print("TEST add check #1")
@@ -58,6 +59,9 @@ class TestGrille():
         if Grille.eq(tmp,self.grille.grille): print("test ERRROT alea check #1")
         else: print("test alea check #1")
         
+        #Test Genere_grille
+        g=Grille.genere_grille()
+        g.affiche()
                                                      
 if __name__ == '__main__':
     test = TestGrille()

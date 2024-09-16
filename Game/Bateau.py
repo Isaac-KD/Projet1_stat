@@ -7,7 +7,7 @@ class Bateau():
         self.taille = taille 
         self.position = position # position de la tete du bateau
         self.direction = direction # 'H' ou 'V'
-        self.body = []*taille # permet de visualiser le bateau et les cases touche peut etre remplacer par un int qui serait ca barre de vie 
+        self.body = [] # permet de visualiser le bateau et les cases touche peut etre remplacer par un int qui serait ca barre de vie 
         self.pdv = taille # le nombre de fois que l'on peut le toucher 
         
     def set_direction(self,direction): 

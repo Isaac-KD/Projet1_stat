@@ -5,10 +5,10 @@ class Bataille():
     def __init__(self):
         self.grille = Grille.genere_grille()
     
-    def joue(self,position): #Peremt de jouer on choisis une position pos (int,int) et renvoie 
+    def joue(self,position): #Peremt de jouer on choisis une position pos (int,int) et renvoie True si on toucher un bateau False sinon
         x,y = position
-        if self.grille[y][x] != 0 or self.grille[y][x] != -1:
-            print("rater ")
+        if self.grille.grille[y][x] == 0 or self.grille.grille[y][x] == -1:
+            print(" rater ")
             return False
         else :
             print("toucher")
@@ -16,8 +16,8 @@ class Bataille():
         return True
     
     def victoire(self): # permet de savoir si tout les bateau sont toucher 
-        for bateau in self.grille.listen_bateau
-            if not bateau.est_vivant():  return False
+        for bateau in self.grille.liste_bateau:
+            if bateau.est_vivant(): return False
         return True
     
     def reset(self): # change la grille par une nouvelle 
@@ -26,16 +26,16 @@ class Bataille():
     def case_conexe_possible(self,pos):# renvoie les cases connexe jouable 
         x,y= pos
         liste_possible=[]
-        if x-1>0:
-            if y-1>0 and self.grille.grille[x-1][y-1]>=0: 
-                liste_possible.append((x-1,y-1))
-            if y+1<9  and self.grille.grille[x-1][y+1]>=0:
-                liste_possible.append((x-1,y+1))
-        if x+1>9:
-            if y-1>0  and self.grille.grille[x+1][y-1]>=0:
-                liste_possible.append((x+1,y-1))
-            if y+1<9  and self.grille.grille[x+1][y+1]>=0:
-                liste_possible.append((x+1,y+1))     
+        if x-1>=0 and self.grille.grille[y][x-1]>=0: 
+                liste_possible.append((x-1,y))
+                
+        if x+1<=9  and self.grille.grille[y][x+1]>=0:
+                liste_possible.append((x+1,y))
+                
+        if y-1>=0  and self.grille.grille[y-1][x]>=0:
+                liste_possible.append((x,y-1))
+        if y+1<=9  and self.grille.grille[y+1][x]>=0:
+                liste_possible.append((x,y+1))     
         return liste_possible      
         
         
