@@ -7,7 +7,7 @@ class Bataille():
     
     def joue(self,position): #Peremt de jouer on choisis une position pos (int,int) et renvoie True si on toucher un bateau False sinon
         x,y = position
-        if self.grille.grille[y][x] == 0 or self.grille.grille[y][x] == -1:
+        if self.grille.grille[y][x] == 0 or self.grille.grille[y][x] < 0:
             print(" rater ")
             return False
         else :

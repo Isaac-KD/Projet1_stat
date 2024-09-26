@@ -2,6 +2,7 @@ from Game.Grille import Grille
 from Game.Bateau import Bateau
 import numpy as np
 import copy
+
 class TestGrille():
     def __init__(self):
         self.grille = Grille()
@@ -40,7 +41,7 @@ class TestGrille():
         # test ADD
         self.grille.add(self.croiseur,(5,5),'H')
         for i in range(self.croiseur.taille):
-            print(i)
+       
             if not self.grille.grille[5][5+i] == self.croiseur.value:
                 print("TEST ERRROR add check #1")
                 break
@@ -61,7 +62,7 @@ class TestGrille():
         
         #Test Genere_grille
         g=Grille.genere_grille()
-        g.affiche()
+        #g.affiche()
                                                      
 if __name__ == '__main__':
     test = TestGrille()
