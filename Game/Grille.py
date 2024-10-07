@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from Game.Bateau import Bateau
 import copy 
+import random
 
 class Grille:
     """
@@ -353,18 +354,17 @@ class Grille:
         # genere les coordonner aleatoirement
         x = int(np.random.uniform(0, 10)) 
         y = int(np.random.uniform(0, 10))
-        if  np.random.uniform(0, 1)>0.5:
-            if matrice_coups.peut_etre_placer(bateau,(x,y),'H') and self.peut_placer(bateau,(x,y),'H'):
+        
+        if  np.random.uniform(0, 1)>0.5 and matrice_coups.peut_etre_placer(bateau,(x,y),'H') and self.peut_placer(bateau,(x,y),'H'):
                 for i in range(bateau.taille):
                     self.grille[y][x+i] = 1 
-                return False
-        else: 
-            if matrice_coups.peut_etre_placer(bateau,(x,y),'V') and self.peut_placer(bateau,(x,y),'V'):
+                return True
+        elif matrice_coups.peut_etre_placer(bateau,(x,y),'V') and self.peut_placer(bateau,(x,y),'V'):
                 for i in range(bateau.taille):
                     self.grille[y-i][x] = 1
-            else:
-                return False
-        return True
+                return True
+        else:   
+            return False
     
     def monte_carlo_solo(self,liste_bateau,matrice_coups,temps_max):
         """Effectue une recherche Monte Carlo pour placer les bateaux.
@@ -378,13 +378,17 @@ class Grille:
             numpy.ndarray: La grille après placement des bateaux.
             
         """
-        if liste_bateau == []: 
+        if not liste_bateau: 
             if self.tous_combler(matrice_coups):
                 return self.grille
             else: return None
             
-        choix = int(np.random.uniform(0, len(liste_bateau))) 
-        bateau=liste_bateau.pop(choix)
+        #choix = int(np.random.uniform(0, len(liste_bateau)))  Autre possibiliter mais moins optimisée
+        #bateau=liste_bateau.pop(choix)
+        
+        bateau = random.choice(liste_bateau)
+        liste_bateau.remove(bateau) 
+        
         for _ in range(temps_max):
                 if self.place_monte_carlo(bateau,matrice_coups): 
                     return self.monte_carlo_solo(liste_bateau,matrice_coups,temps_max)
@@ -404,13 +408,14 @@ class Grille:
         """
         new_liste = copy.deepcopy(self.liste_bateau)
         new_grille = copy.deepcopy(self)
-        tmp =  new_grille.monte_carlo_solo(new_liste,matrice_coups,int(temps_max*0.1)) # on prend que 10 % du temps max pour chaque sous matrice pour pas que cela soit trop long
+        sous_temps_max = int(temps_max*0.1) # on prend que 10 % du temps max pour chaque sous matrice pour pas que cela soit trop long
         
         for _ in range(temps_max):
             new_liste = copy.deepcopy(self.liste_bateau)
             new_grille  = copy.deepcopy(self)
-            tmp =  new_grille.monte_carlo_solo(new_liste,matrice_coups,int(temps_max*0.1))
-            if tmp is not None: return tmp
+            tmp =  new_grille.monte_carlo_solo(new_liste,matrice_coups, sous_temps_max) 
+            if tmp is not None: 
+                return tmp
         return None    # pour eviter un temps de calcul trop long
 
     def monte_carlo_multi(self,matrice_coups,n,temps_max):
@@ -428,13 +433,10 @@ class Grille:
             numpy.ndarray: Grille après placement des bateaux.
         """
 
-        l=[]
-        for _ in range(n):
-            tmp = self.monte_carlo_find_matrice(matrice_coups,temps_max)
-            if tmp is not None :l.append(tmp) # check si on le reussi a trouver un matrice en pas trop longtemps
-        return l
+             # check si on le reussi a trouver un matrice en pas trop longtemps
+        return [tmp for _ in range(n) if (tmp := self.monte_carlo_find_matrice(matrice_coups, temps_max)) is not None] 
     
-    def monte_carlo(self,n,temps_max=1000):
+    def monte_carlo(self,n,temps_max=2000):
         """Effectue une recherche Monte Carlo pour placer les bateaux et 
            retourne la grille des probabilités associée aux grilles trouvées grâce à la méthode Monte Carlo.
 
@@ -446,7 +448,7 @@ class Grille:
             numpy.ndarray: Grille après placement des bateaux.
         """
         matice_start = Grille() # on crée une grille vierge pour pouvoir l'utilise pour ajouter les bateau placer 
-        matice_start.liste_bateau = self.liste_bateau   # on lieu associer les bateaux
+        matice_start.liste_bateau =  [bat for bat in self.liste_bateau if bat.est_vivant()]   # on lieu associer les bateaux encore en vie
         liste = matice_start.monte_carlo_multi((self),n,temps_max)  
         if liste == []: return np.zeros((10,10))    # si aucune solution trouver on renvoie la matrice NULL
         return  np.sum(liste, axis=0)/len(liste)    # grille des probabilités

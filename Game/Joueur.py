@@ -1,17 +1,56 @@
 from Game.Bataille import Bataille
+
+from abc import ABC, abstractmethod
 import random
 import numpy as np
 
-class Joeur():
+class Joeur(ABC):
+    """
+    Classe de base représentant un joueur.
+    
+    Attributes:
+        bataille (Bataille): Instance de la classe Bataille gérant l'état du jeu.
+    """
     def __init__(self):
+        """
+        Initialise une nouvelle instance de Joeur en créant une instance de Bataille.
+        """
         self.bataille = Bataille()
+    
+    def reset(self):
+        """
+        Réinitialise l'état de la bataille.
+        """
+        self.bataille.reset()
+        
+    @abstractmethod
+    def joue(self):  # Méthode abstraite
+        """
+        Simule une partie complète en jouant des coups aléatoires jusqu'à la victoire.
+
+        Returns:
+            int: Nombre de coups joués pour remporter la partie.
+        """
+        pass
+    
+    def genere_ncoups(self,n=100):
+        """
+        Génère une liste de résultats de n parties jouées de manière aléatoire.
+
+        Args:
+            n (int, optional): Nombre de parties à simuler. Par défaut à 100.
+
+        Returns:
+            List[int]: Liste des nombres de coups joués pour chaque partie.
+        """
+        return [self.joue() for _ in range(n)]
         
 class JoeurAleatoire(Joeur):
+    """
+    Joueur qui choisit ses coups de manière aléatoire jusqu'à ce que tous les bateaux soient coulés.
+    """
     def __init__(self):
         super().__init__()
-        
-    def reset(self):
-        self.bataille.reset()
              
     def joue(self):
         cpt=0
@@ -26,15 +65,13 @@ class JoeurAleatoire(Joeur):
         self.reset()
         return cpt
     
-    def genere_ncoups(self,n=100):
-        return [self.joue() for _ in range(n)]
 
 class JoeurHeuristique(Joeur):
+    """
+    Joueur utilisant une approche heuristique. Lorsqu'un bateau est touché, il privilégie les tirs sur les cases adjacentes potentielles.
+    """
     def __init__(self):
         super().__init__()
-        
-    def reset(self):
-        self.bataille.reset()
         
     def joue(self):
         cpt=0
@@ -59,18 +96,24 @@ class JoeurHeuristique(Joeur):
         self.reset()
         return cpt
     
-    def genere_ncoups(self,n=100):
-        return [self.joue() for _ in range(n)]
-    
 class JoeurProbabilisteSimplifiée(Joeur):
+    """
+    Joueur utilisant une approche probabiliste simplifiée. Le joueur calcule une matrice de probabilités pour déterminer les meilleures cases à viser.
+    """
     def __init__(self):
         super().__init__()
     
-    def reset(self):
-        self.bataille.reset()
-        
+    @staticmethod   
     def max_matrice(matrice):
-        # renvoie les coordonnées du plus grand element d'un matrice
+        """
+        Renvoie les coordonnées de l'élément maximum dans une matrice.
+
+        Args:
+            matrice (numpy.ndarray): Matrice dans laquelle rechercher le maximum.
+
+        Returns:
+            Tuple[int, int]: Coordonnées (x, y) de l'élément maximum.
+        """
         return np.unravel_index( np.argmax(matrice) , matrice.shape) 
     
     def joue(self):
@@ -84,19 +127,24 @@ class JoeurProbabilisteSimplifiée(Joeur):
         
         self.reset()
         return cpt
-
-    def genere_ncoups(self,n=100):
-        return [self.joue() for _ in range(n)]
     
 class JoeurMonteCarlo(Joeur):
+    """
+    Joueur utilisant l'algorithme Monte Carlo. Il simule plusieurs scénarios possibles pour estimer les meilleures cases à viser.
+    """
     def __init__(self):
         super().__init__()   
-    
-    def reset(self):
-        self.bataille.reset() 
-    
+
     def max_matrice(self,matrice):
-        # renvoie les coordonnées du plus grand element d'un matrice
+        """
+        Renvoie les coordonnées de l'élément maximum dans une matrice, en évitant les cases déjà jouées dans la matrice de probabilitée.( la moyenne des matrices trouver grace a la methode de Monte-Carlo)
+
+        Args:
+            matrice (numpy.ndarray): Matrice dans laquelle rechercher le maximum.
+
+        Returns:
+            Tuple[int, int]: Coordonnées (x, y) de l'élément maximum valide.
+        """
         if np.all(matrice == 0): 
             x =random.randint(0, 9)
             y = random.randint(0, 9)
@@ -110,18 +158,15 @@ class JoeurMonteCarlo(Joeur):
             return self.max_matrice(matrice)
         else:  return x,y
 
-    def joue(self,n=20):
+    def joue(self,n=10):
         cpt=0
         # matrice pour savoir si on deja jouer le coup 
         while not self.bataille.victoire(): # tant que tous les bateau ne sont pas couler
             matrice_proba = self.bataille.matrice_coup.monte_carlo(n)
             x,y = self.max_matrice(matrice_proba)
             self.bataille.joue((y,x))
+
             cpt+=1
-            print(cpt)
 
         self.reset()
         return cpt
-
-    def genere_ncoups(self,n=100):
-        return [self.joue() for _ in range(n)]
