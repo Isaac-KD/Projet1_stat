@@ -59,7 +59,6 @@ class TestGrille():
     def test_grille(self):
         pos=(-1,-1)
         bateau = self.croiseur
-        self.matrice_possible_toucher_all(pos)
         self.matrice_possible_totaux(pos)
         self.matrice_possible_toucher(bateau,pos)
         self.matrice_possibilite(bateau)
