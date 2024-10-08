@@ -2,29 +2,36 @@ import matplotlib.pyplot as plt
 from Game.Joueur import *
 import numpy as np
 
-def dessin_histogramme_un_joueur(liste_joueur, avg_joueur, nom_joueur):
-    
+def dessin_graphique_un_joueur2(liste_joueur, avg_joueur, nom_joueur):
+    # Filtrer les indices pour éviter les multiples de 5
+    indices = [i for i in range(len(liste_joueur)) if i % 5 != 0]
+
+    # Récupérer les scores correspondants
+    scores = [liste_joueur[i] for i in indices]
+
     # Créer le graphique
     plt.figure(figsize=(14, 8))
 
-    # Histogramme pour le joueur
-    plt.hist(liste_joueur, bins=10, color='#1f77b4', alpha=0.7, edgecolor='black')  # histogramme bleu
+    # Histogramme pour le joueur (avec les indices filtrés)
+    plt.barh(indices, scores, color='#1f77b4', label=f'{nom_joueur} AVG = {avg_joueur}')  # couleur bleu
 
     # Ajouter des titres et des labels
     plt.title(f'Performance de {nom_joueur}', fontsize=16)
     plt.xlabel('Score', fontsize=14)
-    plt.ylabel('Nombre de Tours', fontsize=14)
+    plt.ylabel('Nombre de Tours (sans multiples de 5)', fontsize=14)
 
-    # Créer des ticks personnalisés pour l'axe des abscisses
-    plt.xticks(rotation=90, ha='right', fontsize=8)
+    # Créer des ticks personnalisés pour l'axe des ordonnées
+    plt.yticks(indices, [str(i) for i in indices], fontsize=8)  # Utiliser les indices pour l'axe Y
 
     # Ajuster la largeur des barres
     plt.tight_layout()
 
     # Ajouter une légende et une grille
-    plt.axvline(avg_joueur, color='red', linestyle='dashed', linewidth=1, label=f'Moyenne = {avg_joueur:.2f}')
     plt.legend(fontsize=12)
-    plt.grid(axis='y')
+    plt.grid(axis='x')  # La grille s'affiche sur l'axe des X
+
+    # Ajuster l'axe des ordonnées
+    plt.ylim(-0.5, len(scores) - 0.5)  # Ajuster les limites de l'axe Y
 
     # Afficher le graphique
     plt.show()
@@ -134,17 +141,17 @@ if __name__ == '__main__':
     nb_tour = 100
     #a = j_alea.genere_ncoups( nb_tour)
     #h = j_heur.genere_ncoups( nb_tour)
-    #p = j_proba.genere_ncoups( nb_tour)
-    m = j_monte_carlo.genere_ncoups( nb_tour)
+    p = j_proba.genere_ncoups( nb_tour)
+    #m = j_monte_carlo.genere_ncoups( nb_tour)
     
-    avg_mc = sum(m)/len(m)
-    #avg_proba=  sum(p)/len(p)
+    #avg_mc = sum(m)/len(m)
+    avg_proba=  sum(p)/len(p)
     #avg_heur=  sum(h)/len(h)
     #avg_alea=  sum(a)/len(a)
     
     #dessin_graphique(a,h,p,m,avg_alea,avg_heur,avg_proba,avg_mc)
-    #dessin_graphique_un_joueur(p,avg_proba,"Joueur Probabiliste simplifiée" )
-    dessin_graphique_un_joueur(m,avg_mc,"Joueur Monte-Carlo" )
+    dessin_graphique_un_joueur2(p,avg_proba,"Joueur Probabiliste simplifiée" )
+    #dessin_graphique_un_joueur(m,avg_mc,"Joueur Monte-Carlo" )
     #dessin_graphique_un_joueur(a,avg_alea,"Joueur Aléatoire" )
     #dessin_graphique_un_joueur(h,avg_heur,"Joueur Heuristique" )
     
