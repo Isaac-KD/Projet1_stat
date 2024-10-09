@@ -44,8 +44,8 @@ python -m unittest discover -s Test
     2. Modules du jeu (dossier Game/)
 
         •	Grille.py : Ce module gère la structure de la grille où les bateaux sont placés. Il contient des méthodes pour initialiser la grille, vérifier les collisions et afficher l’état des cases, ainsi que la plupart des fonctions théoriques d’approximation.
-
          Attention, la classe Grille est multi-usage : elle peut être utilisée dans différents contextes. Elle peut servir de matrice de coups, de matrice pour placer les bateaux ou même comme matrice de probabilités.
+         
         •	Bateau.py : Gère la définition et le comportement des bateaux. Chaque bateau a une taille, une position et un état (coulé ou non).
         •	Bataille.py : Ce module contient la logique principale de la bataille. Il contrôle les interactions entre les joueurs, les attaques, et la résolution des coups portés sur les bateaux.
         •	Joueur.py : Gère les joueurs et leurs stratégies. Ce fichier définit les différentes façons dont un joueur peut effectuer ses mouvements (probabilité, heuristique).
