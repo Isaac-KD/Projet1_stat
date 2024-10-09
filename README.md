@@ -10,28 +10,29 @@ Ce projet est un exercice universitaire dans le cadre de l’unité d’enseigne
 
 
 ## Installation
-    ```bash
-    pip install -r requirements.txt
-    ```
+```bash
+pip install -r requirements.txt
+```
 ## Utilisation
 
-    La classe Grille est utiliser dans different circonstances elle est utlise comme matrice de coups ou comme matrice ou placer les bateaux pour la battaile naval.
+La classe Grille est utiliser dans different circonstances elle est utlise comme matrice de coups ou comme matrice ou placer les bateaux pour la battaile naval.
 
-    Lancer la simulation : Une fois que tout est en place, vous pouvez exécuter le script de simulation pour voir comment les différentes stratégies se comportent (Attention : le temps de calcul peut être légèrement long, quelques minutes):
-    ```bash
-    python Simulation.py
-    ```
+Lancer la simulation : Une fois que tout est en place, vous pouvez exécuter le script de simulation pour voir comment les différentes stratégies se comportent (Attention : le temps de calcul peut être légèrement long, quelques minutes):
 
-    Dans le main.py ce trouve un exemple d'utilisation des fonctions que nous avons implementer.
+```bash
+python Simulation.py
+ ```
 
-    ```bash
-    python main.py
-    ```
-    ### Exécution des Tests
-    Des tests unitaires ont été écrits pour valider les principaux composants du projet. Afin de vérifier que tout fonctionne comme prévu, exécutez la suite de tests en utilisant unittest :
-    ```bash
-    python -m unittest discover -s Test
-    ```    
+Dans le main.py ce trouve un exemple d'utilisation des fonctions que nous avons implementer.
+
+```bash
+python main.py
+```
+### Exécution des Tests
+Des tests unitaires ont été écrits pour valider les principaux composants du projet. Afin de vérifier que tout fonctionne comme prévu, exécutez la suite de tests en utilisant unittest :
+```bash
+python -m unittest discover -s Test
+ ```    
 ## Structure du Projet
 
     Le projet est divisé en plusieurs modules et dossiers, chacun ayant une fonction bien définie pour assurer une séparation claire des responsabilités.
