@@ -95,7 +95,7 @@ def dessin_graphique_duo(liste_alea, liste_heur):
     # Afficher le graphique
     plt.show()
 
-def dessin_graphique(liste_alea, liste_heur, liste_proba, liste_mc, avg_alea, avg_heur, avg_proba, avg_mc):
+def dessin_graphique_all(liste_alea, liste_heur, liste_proba, liste_mc, avg_alea, avg_heur, avg_proba, avg_mc):
     # Créer le graphique
     plt.figure(figsize=(14, 8))
 
@@ -139,22 +139,23 @@ if __name__ == '__main__':
     j_monte_carlo = JoeurMonteCarlo()
     
     nb_tour = 100
-    #a = j_alea.genere_ncoups( nb_tour)
-    #h = j_heur.genere_ncoups( nb_tour)
-    #p = j_proba.genere_ncoups( nb_tour)
-    #m = j_monte_carlo.genere_ncoups( nb_tour) # temps de calucle un peu long
+    a = j_alea.genere_ncoups( nb_tour)
+    h = j_heur.genere_ncoups( nb_tour)
+    p = j_proba.genere_ncoups( nb_tour)
+    m = j_monte_carlo.genere_ncoups( nb_tour) # temps de calucle un peu long
     
-    #avg_mc = sum(m)/len(m)
-    #avg_proba=  sum(p)/len(p)
-    #avg_heur=  sum(h)/len(h)
-    #avg_alea=  sum(a)/len(a)
+    avg_mc = sum(m)/len(m)
+    avg_proba=  sum(p)/len(p)
+    avg_heur=  sum(h)/len(h)
+    avg_alea=  sum(a)/len(a)
     
-    #dessin_graphique_un_joueur(a,avg_alea,"Joueur Aléatoire" )
-    #dessin_graphique_un_joueur(h,avg_heur,"Joueur Heuristique" )
-    #dessin_graphique_un_joueur(p,avg_proba,"Joueur Probabiliste simplifiée" )
-    #dessin_graphique_un_joueur(m,avg_mc,"Joueur Monte-Carlo" )
+    dessin_graphique_un_joueur(a,avg_alea,"Joueur Aléatoire" )
+    dessin_graphique_un_joueur(h,avg_heur,"Joueur Heuristique" )
+    dessin_graphique_un_joueur(p,avg_proba,"Joueur Probabiliste simplifiée" )
+    dessin_graphique_un_joueur(m,avg_mc,"Joueur Monte-Carlo" )
+    dessin_graphique_all(a,h,p,m,avg_alea,avg_heur,avg_proba,avg_heur)
 
-    
+# section pour jouer de façon unitaire 
     #print(j_alea.joue())   
     #print(j_heur.joue())   
     #print(j_proba.joue())

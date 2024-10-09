@@ -39,6 +39,10 @@ class Grille:
         configuration_pour_un_bateau(bateau): denombre le nombre de configuration possible pour un bateau
         trouver_grille_egale(): Cherche si la matrice ne possede pas de colision
         genere_invalide_grille(): Genere un grille invalide c'est a dire avec une colision
+        verifie(self,pos,ps): Verifie si le sous-marrin ce situe bien dans la case et si il  est renvoie true avec une probabilité ps
+        max_proba(): Renvoie la valeur maximim d'une matrice
+        genere_grille_aleatoire(n): Genere un grille aleatoire ou les valeur sont les plus grand son centrer au plus vers le centre et dont la somme des valeur vaut 1
+        find_sous_marrin(ps): Cherche un sous-marrin dans une matrice avec detecteur qui a une probabilité de ps de faire un faut negatif et de 1 pour les negatif
     """
     
     def __init__(self,taille=10):
@@ -49,7 +53,7 @@ class Grille:
             taille (int): La taille de la grille, par défaut 10.
         """
         self.taille = taille
-        self.grille = np.zeros((taille, taille), dtype=int) # matrice de 0 de taille taille et de type int 
+        self.grille = np.zeros((taille, taille)) # matrice de 0 de taille taille 
         self.liste_bateau=[] # liste des bateau dans la grille
         
     def affiche(self): 
@@ -499,17 +503,113 @@ class Grille:
         while not Grille.eq(self.grille, grilleGeneree.grille) :    
             grilleGeneree = Grille.genere_grille(liste)
             cpt += 1
-
-
         return cpt
     
     def genere_invalide_grille(self):
         """
         charge une grille invalide dans la Classe 
         """
-        cpt=0
         while self.grille_valide(): # temps que la grill est valide
             self.genere_matrice_colision()  # genere une matrice avec collision 
-            cpt+=1
+               
+    def verifie(self,pos,ps)-> bool:
+        """
+        Vérifie si un capteur détecte correctement un point de la grille (marqué par la valeur 1), avec une probabilité d'exactitude donnée. et renvoie True 
+        si le point avec un probabailité ps est present ,sinon False
+        
+        grid : np.array
+            La grille 2D de dimensions NxN contenant des valeurs 0 et 1, où 1 représente un point d'intérêt.
+        
+        position : tuple[int, int]
+            Coordonnées (x, y) sur la grille où le capteur va vérifier la présence du point d'intérêt.
+        
+        ps : float, optionnel
+            La probabilité (entre 0 et 1) que le capteur détecte correctement la présence du point d'intérêt à la position donnée.
+            La valeur par défaut est 0.8, ce qui signifie que le capteur détecte correctement dans 80% des cas.
+        """
+        x, y = pos
+        if(self.grille[x][y] == 1):
+            affiche = random.random()
+
+            if(affiche < ps):
+                return True
+        
+        return False
+
+    def max_proba(self):
+        """
+        Renvoie les coordonée du maximun d'une matrice
+        """
+        return np.unravel_index(np.argmax(self.grille), (self.grille.shape)) 
+    
+    @staticmethod
+    def genere_grille_aleatoire(n):
+        """
+        Génère une grille de probabilités aléatoires de dimensions N x N, où 
+        les valeurs au centre de la grille sont plus probables que celles des bords. 
+        La somme des valeurs dans la grille est normalisée à 1.
+        """
+        g = Grille()
+        g.grille = np.random.rand(n,n)  # genere un grille aleatoire
+
+        # Calcule du centre de la grille
+        center = (n - 1) // 2
+
+        # Appliquer un facteur de distance pour diminuer les valeurs en s'éloignant du centre
+        fact = np.zeros((n, n))  # Correction de l'initialisation du tableau
+        for i in range(n):
+            for j in range(n):
+                distance = np.sqrt((i - center) ** 2 + (j - center) ** 2)
+                fact[i][j] = np.exp(-distance)  # Diminuer les valeurs avec la distance
+
+        # Multiplier les valeurs aléatoires par le facteur de distance
+        g.grille = fact*g.grille
+        grid_sum = np.sum(g.grille)
+
+        # Normaliser la grille pour que la somme soit égale à 1
+        if grid_sum > 0:
+            g.grille /= grid_sum
+
+        return g
+    
+    def find_sous_marrin(self,ps = 0.8):
+        """
+        Implémente l'algorithme du scorpion pour optimiser une grille probabiliste.
+        
+        L'objectif est de maximiser une grille probabiliste  jusqu'à ce que l'on retrouve le sous-marin, 
+        évaluée par la fonction `check`. Cette fonction met à jour les probabilités dans la grille en 
+        fonction de la règle d'actualisation et renvoie le nombre d'iteration avant de troiuver le sous-marin.
+        
+        La Grille doit contenir que un sous-marrin de taille 1 
+        
+        Parameters
+        ----------
+        ps : float,
+            La probabilité de sélection pour le sous-marin. Il influence la mise à jour des probabilités dans la grille.
+
+        """
+        # Nombre d'itérations
+        iterations = 1
+        grille_aleatoire = Grille.genere_grille_aleatoire(self.taille)
+        # Max initiale de la grille
+        x, y =  grille_aleatoire.max_proba()
+
+        while not self.verifie((x, y), ps):
+            pi_k = self.grille[x][y]
+            
+            # Mise à jour de la probabilité pour la case sélectionnée
+            grille_aleatoire.grille[x][y] = ((1 - ps) * pi_k) / (1 - ps * pi_k)
+
+            # Mise à jour des autres cases
+            for i in range(self.taille):
+                for j in range(self.taille):
+                    if (i, j) != (x, y):
+                        grille_aleatoire.grille[i][j] = grille_aleatoire.grille[i][j] / (1 - ps * pi_k)
+
+            # Maximisation après mise à jour
+            x, y =grille_aleatoire.max_proba()
+            iterations += 1
+
+        return iterations
 
         
