@@ -34,6 +34,11 @@ class Grille:
         monte_carlo_find_matrice(matrice_coups, temps_max): Trouve une matrice valide pour le placement des bateaux.
         monte_carlo_multi(matrice_coups, n, temps_max): Exécute plusieurs simulations Monte Carlo pour trouver des solutions.
         monte_carlo(n, temps_max=1000): Effectue une recherche Monte Carlo pour placer les bateaux et retourne la grille.
+        genere_matrice_colision(): Genere un matrice avec colision
+        grille_valide (liste): Renvoie true si la grille est valide
+        configuration_pour_un_bateau(bateau): denombre le nombre de configuration possible pour un bateau
+        trouver_grille_egale(): Cherche si la matrice ne possede pas de colision
+        genere_invalide_grille(): Genere un grille invalide c'est a dire avec une colision
     """
     
     def __init__(self,taille=10):
@@ -86,21 +91,7 @@ class Grille:
             for i in range(bateau.taille):
                 self.grille[y][x+i]= bateau.value
                 bateau.body.append((x+i,y))
-                
-    """    suppression a faire     
-    def add_monte_carlo(self,bateau,position,direction): # Il n'y a pas de check sur le fait que le batau sort du tableau, la fonction ajoute le bateau sur la grille
-        x,y = position 
-        if direction == 'V':
-            for i in range(bateau.taille):
-                if self.grille[y-i][x] != -2:
-                    self.grille[y-i][x]= bateau.value
-                bateau.body.append((x,y-i))
-        else :
-            for i in range(bateau.taille):
-                if self.grille[y-i][x] != -2:
-                    self.grille[y][x+i]= bateau.value
-                bateau.body.append((x+i,y))
-      """          
+
     def peut_placer(self, bateau, position, direction):
         """Vérifie si un bateau peut être placé à une position donnée dans une direction.
 
@@ -121,7 +112,7 @@ class Grille:
             for i in range(bateau.taille): # check si le bateau peut etre pacer sur la grille
                 if not self.grille[y][x+i] == 0 : return False 
         if direction == 'V':
-            for i in range(bateau.taille):
+            for i in range(bateau.taille): # check si le bateau peut etre pacer sur la grille
                 if not self.grille[y-i][x] == 0: return False
         return True
             
@@ -144,18 +135,10 @@ class Grille:
         else: 
             return False 
 
-    def place_all(self): # permet de placer tout les bateau de base
-        liste_non_placer = []
-        #porte_avions 
-        liste_non_placer.append( Bateau(5,1,(-1,-1),self))
-        #croiseur
-        liste_non_placer.append( Bateau(4,2,(-1,-1),self))
-        #contre_torpilleurs
-        liste_non_placer.append(Bateau(3,3,(-1,-1),self))
-        #sous_marin
-        liste_non_placer.append( Bateau(3,4,(-1,-1),self))
-        #torpilleur 
-        liste_non_placer.append( Bateau(2,5,(-1,-1),self))
+    def place_all(self,liste_non_placer = None): # permet de placer tout les bateau de base
+        if liste_non_placer == None:
+            liste_non_placer = [Bateau(5,1,(-1,-1),self),Bateau(4,2,(-1,-1),self),Bateau(3,3,(-1,-1),self),Bateau(3,4,(-1,-1),self),Bateau(2,5,(-1,-1),self)]
+            #liste = porte_avions ,croiseur,contre_torpilleurs,sous_marin,torpilleur 
         
         while liste_non_placer:
             x = liste_non_placer.pop()  # Extraire un bateau à placer
@@ -223,10 +206,11 @@ class Grille:
         return None
                 
     @staticmethod                  
-    def genere_grille():
+    def genere_grille(liste=None):
         """Crée une grille générée aléatoirement avec des bateaux."""
         new = Grille()
-        new.place_all()
+        newliste = copy.deepcopy(liste)
+        new.place_all(newliste)
         return new
     
     @staticmethod
@@ -267,13 +251,13 @@ class Grille:
             for i in range(bateau.taille):
                 if (self.grille[y][x+i] == -2): cpt+=1
                 if (self.grille[y][x+i] == -1): return False # return False car impossible 
-            return not cpt == bateau.taille
+            return not cpt == bateau.taille                  # check si le bateau est plus grand que la taille de la trace de -2 si elle existe   
         else :
             if (y - bateau.taille <0): return False
             for i in range(bateau.taille):
                 if (self.grille[y-i][x] == -2): cpt+=1
                 if (self.grille[y-i][x] == -1): return False # return False car impossible 
-            return (not cpt == bateau.taille) 
+            return (not cpt == bateau.taille)                # check si le bateau est plus grand que la taille de la trace de -2 si elle existe  
 
                 
     def matrice_possibilite_solo(self, bateau):
@@ -318,12 +302,13 @@ class Grille:
         Returns:
             list: Liste des matrices des positions possibles pour chaque bateau.
         """
-        nb_bateau = len(self.liste_bateau)
         matrice =  np.zeros((self.taille,self.taille)) # matrice de 0
-        for b in self.liste_bateau: 
+        liste_bateau_vivant = [bat for bat in self.liste_bateau if bat.est_vivant()] # liste des bateaux non couler
+        nb_bateau = len(liste_bateau_vivant)
+        for b in liste_bateau_vivant: 
             matrice += self.matrice_possibilite_solo(b)
             # check si c'est pas la matrice null dans ce cas la on ne compte pas le bateau dans la liste des bateaux
-            if not np.any(matrice != 0): nb_bateau -= 1
+            if not np.any(matrice != 0): nb_bateau -= 1 # si on n'a reussi a placer 0 bateau pour le bateau selectioner
         return matrice /nb_bateau
     
     def tous_combler(self,matrice_coups):
@@ -355,14 +340,17 @@ class Grille:
         x = int(np.random.uniform(0, 10)) 
         y = int(np.random.uniform(0, 10))
         
+        # on place un bateau Horizontalement
         if  np.random.uniform(0, 1)>0.5 and matrice_coups.peut_etre_placer(bateau,(x,y),'H') and self.peut_placer(bateau,(x,y),'H'):
                 for i in range(bateau.taille):
                     self.grille[y][x+i] = 1 
-                return True
+                return True # on a reussi a le placer 
+            
+        # on place un bateau veritaclement
         elif matrice_coups.peut_etre_placer(bateau,(x,y),'V') and self.peut_placer(bateau,(x,y),'V'):
                 for i in range(bateau.taille):
                     self.grille[y-i][x] = 1
-                return True
+                return True  # on a reussi a le placer 
         else:   
             return False
     
@@ -378,22 +366,21 @@ class Grille:
             numpy.ndarray: La grille après placement des bateaux.
             
         """
-        if not liste_bateau: 
-            if self.tous_combler(matrice_coups):
-                return self.grille
-            else: return None
-            
-        #choix = int(np.random.uniform(0, len(liste_bateau)))  Autre possibiliter mais moins optimisée
-        #bateau=liste_bateau.pop(choix)
+        # cas de base
+        if not liste_bateau:                                # si la liste de bateau est vide 
+            if self.tous_combler(matrice_coups):            # si tout les cases toucher sont combler 
+                return self.grille                              # alors on renvoie la grille
+            else: return None                               # sinon matrice non valide on renvoie None
         
-        bateau = random.choice(liste_bateau)
+        # on choisis un bateau
+        bateau = random.choice(liste_bateau)                         
         liste_bateau.remove(bateau) 
         
-        for _ in range(temps_max):
-                if self.place_monte_carlo(bateau,matrice_coups): 
+        for _ in range(temps_max):                                                      # pour eviter les calcule trop long
+                if self.place_monte_carlo(bateau,matrice_coups):                        # si on peut placer le bateau on fait un appel reccursif pour placer le prochain bateau 
                     return self.monte_carlo_solo(liste_bateau,matrice_coups,temps_max)
-        return None
-        
+        return None                                                                     # aucun postion trouver en temps_max coup compte comme invalide 
+
     
     def monte_carlo_find_matrice(self,matrice_coups,temps_max):
         """Trouve une matrice valide pour le placement des bateaux.
@@ -411,8 +398,8 @@ class Grille:
         sous_temps_max = int(temps_max*0.1) # on prend que 10 % du temps max pour chaque sous matrice pour pas que cela soit trop long
         
         for _ in range(temps_max):
-            new_liste = copy.deepcopy(self.liste_bateau)
-            new_grille  = copy.deepcopy(self)
+            new_liste = copy.deepcopy(self.liste_bateau)    # on copy la liste car elle va etre modifier plus tard 
+            new_grille  = copy.deepcopy(self)               # de meme la grille va etre modifie
             tmp =  new_grille.monte_carlo_solo(new_liste,matrice_coups, sous_temps_max) 
             if tmp is not None: 
                 return tmp
@@ -453,3 +440,76 @@ class Grille:
         if liste == []: return np.zeros((10,10))    # si aucune solution trouver on renvoie la matrice NULL
         return  np.sum(liste, axis=0)/len(liste)    # grille des probabilités
     
+    def genere_matrice_colision(self):
+         """ 
+         Renvoie une matrice avec des possibles colisions si il y a une colision alors on met dans les cases qui colision la somme des values des bateaux que l'on multiplie par -1
+         """
+         for bateau in self.liste_bateau:
+            if random.random() >0.5: # On ajoute le bateau de maniere Horizontal et applique donc des condition sur les coorodnées 
+                x = int(np.random.uniform(0, 10-bateau.taille)) 
+                y = int(np.random.uniform(0, 10))
+                for i in range(bateau.taille):
+                    if self.grille[y][x+i] == 0: self.grille[y][x+i] = bateau.value # case vierge on ajoute le bateau
+                    elif self.grille[y][x+i] >0:                                    # case contenant un bateau premiere colision on adition les deux et on multiplie par -1
+                        a=self.grille[y][x+i]
+                        self.grille[y][x+i] = (-1)*(a+bateau.value)
+                    else:                                                            # case aillant deja eu une colision on a juste a y soustraire la value du nouveau bateau
+                        self.grille[y][x+i] -= bateau.value
+            else: # On ajoute le bateau de maniere Vertical et applique donc des condition sur les coorodnées
+                x = int(np.random.uniform(0, 10)) 
+                y = int(np.random.uniform(bateau.taille, 10))
+                for i in range(bateau.taille):
+                    if self.grille[y-i][x] == 0: self.grille[y-i][x] = bateau.value    # case vierge on ajoute le bateau
+                    elif self.grille[y-i][x] >0:                                       # case contenant un bateau premiere colision on adition les deux et on multiplie par -1
+                        a=self.grille[y-i][x]
+                        self.grille[y-i][x] = (-1)*(a+bateau.value)
+                    else:                                                              # case aillant deja eu une colision on a juste a y soustraire la value du nouveau bateau
+                        self.grille[y][x+i] -= bateau.value
+                        a = self.grille[y-i][x]
+                        self.grille[y-i][x] -= bateau.value
+                  
+    def grille_valide(self)->bool:
+        """ 
+        Attention doit prendre une matrice genere par genere_matrice_colision!!
+        
+        Renvoie True si la matrice est valide c'est a dire que tout les elements sans plus grand que 0
+        """
+        x,y =  np.unravel_index( np.argmin(self.grille) , self.grille.shape) # renvoie les coordonées minimal de la matrice
+        return ( self.grille[x][y] >=0)
+    
+    def configuration_pour_un_bateau(self,bateau) -> int :
+        """ Bateau -> int
+        Renvoie le nombre de configuration pour un bateau sur une grille de taille 10 x 10
+        """
+        cpt = 0
+        for x in range(10):
+            for y in range(10):
+                if (self.peut_placer(bateau, (x,y), 'V')): 
+                    cpt=cpt+1
+                if (self.peut_placer(bateau, (x,y), 'H')):
+                    cpt=cpt+1
+        return cpt
+        
+    def trouver_grille_egale(self,liste) -> int :
+        """ int[][] * int[] -> int
+        Renvoie le nombre de grille générée pour retrouver la même grille que celle passée en paramètre
+        """
+        grilleGeneree = Grille.genere_grille(liste) # genere une grille aleatoirement en fonction d'une liste de bateau
+        cpt = 1
+        while not Grille.eq(self.grille, grilleGeneree.grille) :    
+            grilleGeneree = Grille.genere_grille(liste)
+            cpt += 1
+
+
+        return cpt
+    
+    def genere_invalide_grille(self):
+        """
+        charge une grille invalide dans la Classe 
+        """
+        cpt=0
+        while self.grille_valide(): # temps que la grill est valide
+            self.genere_matrice_colision()  # genere une matrice avec collision 
+            cpt+=1
+
+        

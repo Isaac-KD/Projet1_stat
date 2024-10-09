@@ -1,10 +1,9 @@
 from Game.Bataille import Bataille
-
 from abc import ABC, abstractmethod
 import random
 import numpy as np
 
-class Joeur(ABC):
+class Joueur(ABC):
     """
     Classe de base représentant un joueur.
     
@@ -24,7 +23,7 @@ class Joeur(ABC):
         self.bataille.reset()
         
     @abstractmethod
-    def joue(self):  # Méthode abstraite
+    def joue(self):
         """
         Simule une partie complète en jouant des coups aléatoires jusqu'à la victoire.
 
@@ -45,7 +44,7 @@ class Joeur(ABC):
         """
         return [self.joue() for _ in range(n)]
         
-class JoeurAleatoire(Joeur):
+class JoeurAleatoire(Joueur):
     """
     Joueur qui choisit ses coups de manière aléatoire jusqu'à ce que tous les bateaux soient coulés.
     """
@@ -66,7 +65,7 @@ class JoeurAleatoire(Joeur):
         return cpt
     
 
-class JoeurHeuristique(Joeur):
+class JoeurHeuristique(Joueur):
     """
     Joueur utilisant une approche heuristique. Lorsqu'un bateau est touché, il privilégie les tirs sur les cases adjacentes potentielles.
     """
@@ -89,22 +88,22 @@ class JoeurHeuristique(Joeur):
                 cpt+=1
                 if self.bataille.joue((x, y)):
                     liste_possible = self.bataille.case_conexe_possible((x,y)) # on prend tout les cases connexe jouable
-                    pile+=liste_possible
+                    pile=liste_possible+pile ## changer 
             if pile != []: 
                 choix = random.randint(0, len(pile)-1)
                 choisis = pile.pop(choix) # on choisis une des cases connexe       
+                
         self.reset()
         return cpt
     
-class JoeurProbabilisteSimplifiée(Joeur):
+class JoeurProbabilisteSimplifiée(Joueur):    # probleme a optimiser 
     """
     Joueur utilisant une approche probabiliste simplifiée. Le joueur calcule une matrice de probabilités pour déterminer les meilleures cases à viser.
     """
     def __init__(self):
         super().__init__()
     
-    @staticmethod   
-    def max_matrice(matrice):
+    def max_matrice(self,matrice):
         """
         Renvoie les coordonnées de l'élément maximum dans une matrice.
 
@@ -114,21 +113,33 @@ class JoeurProbabilisteSimplifiée(Joeur):
         Returns:
             Tuple[int, int]: Coordonnées (x, y) de l'élément maximum.
         """
-        return np.unravel_index( np.argmax(matrice) , matrice.shape) 
-    
+        if np.all(matrice == 0):        # si la matrice est null on tire aleatoirement
+            x =random.randint(0, 9)
+            y = random.randint(0, 9)
+            while self.bataille.matrice_coup.grille[x][y] !=0:
+                x =random.randint(0, 9)
+                y = random.randint(0, 9)
+            return (x,y)
+        x,y =  np.unravel_index( np.argmax(matrice) , matrice.shape)        # on prend les coordonnée max 
+        if self.bataille.matrice_coup.grille[x][y] == -2:                   # on check que le joue n'a pas été deja jouer 
+            matrice[x][y] = 0                                               # on met la probabilité a 0 et on recherche le max de maniere recursif 
+            return self.max_matrice(matrice)
+        else:  
+            return x,y
+
     def joue(self):
         cpt=0
         # matrice pour savoir si on deja jouer le coup 
         while not self.bataille.victoire(): # tant que tous les bateau ne sont pas couler
-            matrice_proba = self.bataille.matrice_coup.matrice_possible_multi()
-            x,y = JoeurProbabilisteSimplifiée.max_matrice(matrice_proba)
+            matrice_proba = self.bataille.matrice_coup.matrice_possible_multi()     # on genere la matrice des probabilité
+            x,y = self.max_matrice(matrice_proba) # on prend le meilleur coups de la matrice_proba
             self.bataille.joue((y,x))
             cpt+=1
         
         self.reset()
         return cpt
     
-class JoeurMonteCarlo(Joeur):
+class JoeurMonteCarlo(Joueur):
     """
     Joueur utilisant l'algorithme Monte Carlo. Il simule plusieurs scénarios possibles pour estimer les meilleures cases à viser.
     """
@@ -145,26 +156,27 @@ class JoeurMonteCarlo(Joeur):
         Returns:
             Tuple[int, int]: Coordonnées (x, y) de l'élément maximum valide.
         """
-        if np.all(matrice == 0): 
+        if np.all(matrice == 0):        # si la matrice est null on tire aleatoirement
             x =random.randint(0, 9)
             y = random.randint(0, 9)
             while self.bataille.matrice_coup.grille[x][y] !=0:
                 x =random.randint(0, 9)
                 y = random.randint(0, 9)
             return (x,y)
-        x,y =  np.unravel_index( np.argmax(matrice) , matrice.shape) 
-        if self.bataille.matrice_coup.grille[x][y] == -2:
-            matrice[x][y] = 0
+        x,y =  np.unravel_index( np.argmax(matrice) , matrice.shape)        # on prend les coordonnée max 
+        if self.bataille.matrice_coup.grille[x][y] == -2:                   # on check que le joue n'a pas été deja jouer 
+            matrice[x][y] = 0                                               # on met la probabilité a 0 et on recherche le max de maniere recursif 
             return self.max_matrice(matrice)
-        else:  return x,y
+        else:  
+            return x,y
 
     def joue(self,n=10):
         cpt=0
         # matrice pour savoir si on deja jouer le coup 
         while not self.bataille.victoire(): # tant que tous les bateau ne sont pas couler
-            matrice_proba = self.bataille.matrice_coup.monte_carlo(n)
-            x,y = self.max_matrice(matrice_proba)
-            self.bataille.joue((y,x))
+            matrice_proba = self.bataille.matrice_coup.monte_carlo(n)   # on obtient un matrice avec les possibles meilleurs coups a jouer voir code pour plus de detaille
+            x,y = self.max_matrice(matrice_proba)                       # on prend le max de la matrice donc le meilleur coups a jouer trouver 
+            self.bataille.joue((y,x))                                   # on joue
 
             cpt+=1
 

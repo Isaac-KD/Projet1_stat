@@ -34,11 +34,11 @@ class Bataille():
             bool: `True` si le coup touche un bateau, `False` sinon.
         """
         x,y = position
-        if (self.grille.grille[y][x] > 0) and (self.matrice_coup.grille[y][x] == 0):
+        if (self.grille.grille[y][x] > 0) and (self.matrice_coup.grille[y][x] == 0):    # si la case est valide on appel la fonction toucher 
             self.toucher(position)
             return True
     
-        self.matrice_coup.grille[y][x] -=1
+        self.matrice_coup.grille[y][x] -=1  # sinon on marque le coup comme un echec
         return False
     
     def victoire(self) -> bool:
@@ -79,7 +79,7 @@ class Bataille():
         x,y = pos
         if self.grille.grille[y][x] > 0 :
             self.matrice_coup.grille[y][x]=-2
-            b = self.grille.find(pos)  # cheche le bateau toucher 
+            b = self.grille.find(pos)  # cherche le bateau toucher 
             b.pdv-=1
             if not b.est_vivant(): # check si le bateau a encore au moins une case non toucher
                 for pos_old in b.body: # remplace les cases -2 par -1
