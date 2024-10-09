@@ -493,6 +493,28 @@ class Grille:
                 if (self.peut_placer(bateau, (x,y), 'H')):
                     cpt=cpt+1
         return cpt
+    
+    def configuration_pour_liste_bateau(self,liste_bateau) -> int :
+        """ 
+        Renvoie le nombre de configuration pour un liste de bateau sur une grille de taille 10 x 10
+        """
+        if liste_bateau == []:
+            return 1
+        cpt=0
+        new = copy.deepcopy(self)
+        liste = copy.deepcopy(liste_bateau)
+        bateau = liste.pop(0)
+        for x in range(10):
+            for y in range(10):
+                if (self.peut_placer(bateau, (x,y), 'V')):
+                    self.add(bateau,(x,y), 'V')
+                    cpt+=new.configuration_pour_liste_bateau(liste)
+                    new = copy.deepcopy(self)
+                if (self.peut_placer(bateau, (x,y), 'H')):
+                    self.add(bateau,(x,y), 'V')
+                    cpt+=new.configuration_pour_liste_bateau(liste)
+                    new = copy.deepcopy(self)
+        return cpt
         
     def trouver_grille_egale(self,liste) -> int :
         """ int[][] * int[] -> int

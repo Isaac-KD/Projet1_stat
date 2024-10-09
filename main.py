@@ -26,9 +26,10 @@ grille_invalide.liste_bateau = liste_bateau
 grille_invalide.genere_invalide_grille()
 #grille_invalide.affiche()      # pour afficher la grille
 
-# trouver le nombre de conviguration
+# trouver le nombre de convifuration
 g.grille = np.zeros((g.taille,g.taille)) 
 print("Il y'a ",g.configuration_pour_un_bateau(g.liste_bateau[0]), " configuration possible pour le port-avion") # pour le porte avions
+print("Il y'a ",g.configuration_pour_liste_bateau(liste_bateau[2:])," configuration possible avec 3 bateau")
 
 # trouver_grille_egale
 g = Grille.genere_grille(liste_bateau[3:])      # on recrée une grille avec seulement 2 bateau
